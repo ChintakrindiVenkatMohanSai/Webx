@@ -2,14 +2,79 @@
 <html>
 <head>
 <title>ARVR Platform</title>
+
+<!-- VERY IMPORTANT FOR MOBILE -->
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
 <link rel="stylesheet" href="/static/css/style.css">
+
+<style>
+body{
+margin:0;
+font-family:Arial, sans-serif;
+background:#111;
+color:white;
+}
+
+header{
+display:flex;
+justify-content:space-between;
+align-items:center;
+padding:15px 20px;
+background:black;
+flex-wrap:wrap;
+}
+
+h1{
+font-size:22px;
+margin:0;
+}
+
+.card{
+background:#222;
+padding:20px;
+margin:20px;
+border-radius:12px;
+text-align:center;
+}
+
+input,button{
+width:100%;
+padding:12px;
+margin-top:10px;
+border-radius:8px;
+border:none;
+}
+
+button{
+background:#00c3ff;
+color:white;
+font-weight:bold;
+cursor:pointer;
+}
+
+button:hover{
+background:#009dd1;
+}
+
+/* MOBILE RESPONSIVE */
+@media(max-width:600px){
+.card{
+margin:10px;
+}
+h1{
+font-size:18px;
+}
+}
+</style>
+
 </head>
 
 <body>
 
 <header>
 <h1>AR/VR Platform</h1>
-<a href="/logout">Logout</a>
+<a href="/logout" style="color:white;text-decoration:none;">Logout</a>
 </header>
 
 <div class="card">
