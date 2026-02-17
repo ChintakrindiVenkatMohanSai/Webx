@@ -13,16 +13,15 @@ def allowed_file(filename):
     return "." in filename and filename.rsplit(".",1)[1].lower() in ALLOWED
 
 
-# -------- LOGIN (No DB simple auth) --------
+# -------- LOGIN --------
 @app.route("/login", methods=["GET","POST"])
 def login():
     if request.method == "POST":
-        user = request.form["user"]
-        pwd = request.form["pwd"]
+        user = request.form.get("user")
+        pwd = request.form.get("pwd")
 
-        # simple demo login
-        if user=="admin" and pwd=="1234":
-            session["user"]=user
+        if user == "admin" and pwd == "1234":
+            session["user"] = user
             return redirect("/")
         return "Invalid Login"
 
@@ -35,7 +34,7 @@ def logout():
     return redirect("/login")
 
 
-# -------- MAIN PAGE --------
+# -------- HOME --------
 @app.route("/")
 def index():
     if "user" not in session:
@@ -43,14 +42,19 @@ def index():
     return render_template("index.html")
 
 
-# -------- FILE UPLOAD --------
+# -------- UPLOAD --------
 @app.route("/upload", methods=["POST"])
 def upload():
+    if "file" not in request.files:
+        return "No file"
+
     file = request.files["file"]
+
     if file and allowed_file(file.filename):
         path = os.path.join(UPLOAD_FOLDER, file.filename)
         file.save(path)
         return redirect(url_for("viewer", name=file.filename))
+
     return "Invalid file"
 
 
@@ -65,5 +69,7 @@ def files(name):
     return send_from_directory(UPLOAD_FOLDER, name)
 
 
+# -------- RENDER DEPLOYMENT FIX --------
 if __name__ == "__main__":
-    app.run(debug=True)
+    port = int(os.environ.get("PORT", 5000))
+    app.run(host="0.0.0.0", port=port)
