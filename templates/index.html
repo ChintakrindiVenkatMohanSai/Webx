@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>ARVR Platform</title>
+<link rel="stylesheet" href="/static/css/style.css">
+</head>
+
+<body>
+
+<header>
+<h1>AR/VR Platform</h1>
+<a href="/logout">Logout</a>
+</header>
+
+<div class="card">
+
+<h2>Upload Image or 3D Model</h2>
+
+<form action="/upload" method="POST" enctype="multipart/form-data">
+<input type="file" name="file" required>
+<button>Upload</button>
+</form>
+
+</div>
+
+</body>
+</html>
