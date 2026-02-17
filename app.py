@@ -2,28 +2,30 @@ from flask import Flask, render_template, request, redirect, url_for, session, s
 import os
 
 app = Flask(__name__)
-app.secret_key = "arvr_secret_key"
+app.secret_key = "arvr_secret"
+
+app.config.update(
+    SESSION_COOKIE_SECURE=True,
+    SESSION_COOKIE_SAMESITE="Lax"
+)
 
 UPLOAD_FOLDER = "uploads"
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
-ALLOWED = {"png","jpg","jpeg","pdf","glb","gltf","obj","fbx"}
+ALLOWED = {"png","jpg","jpeg","glb","gltf","obj","fbx","pdf"}
 
-def allowed_file(filename):
-    return "." in filename and filename.rsplit(".",1)[1].lower() in ALLOWED
+def allowed_file(name):
+    return "." in name and name.rsplit(".",1)[1].lower() in ALLOWED
 
 
-# -------- LOGIN --------
+# LOGIN
 @app.route("/login", methods=["GET","POST"])
 def login():
-    if request.method == "POST":
-        user = request.form.get("user")
-        pwd = request.form.get("pwd")
-
-        if user == "admin" and pwd == "1234":
-            session["user"] = user
+    if request.method=="POST":
+        if request.form["user"]=="admin" and request.form["pwd"]=="1234":
+            session["user"]="admin"
             return redirect("/")
-        return "Invalid Login"
+        return render_template("login.html", error="Invalid Login")
 
     return render_template("login.html")
 
@@ -34,7 +36,7 @@ def logout():
     return redirect("/login")
 
 
-# -------- HOME --------
+# HOME
 @app.route("/")
 def index():
     if "user" not in session:
@@ -42,23 +44,20 @@ def index():
     return render_template("index.html")
 
 
-# -------- UPLOAD --------
+# UPLOAD
 @app.route("/upload", methods=["POST"])
 def upload():
-    if "file" not in request.files:
-        return "No file"
-
-    file = request.files["file"]
+    file=request.files["file"]
 
     if file and allowed_file(file.filename):
-        path = os.path.join(UPLOAD_FOLDER, file.filename)
+        path=os.path.join(UPLOAD_FOLDER,file.filename)
         file.save(path)
         return redirect(url_for("viewer", name=file.filename))
 
     return "Invalid file"
 
 
-# -------- VIEWER --------
+# VIEWER
 @app.route("/viewer/<name>")
 def viewer(name):
     return render_template("viewer.html", file=name)
@@ -66,9 +65,9 @@ def viewer(name):
 
 @app.route("/uploads/<name>")
 def files(name):
-    return send_from_directory(UPLOAD_FOLDER, name)
+    return send_from_directory(UPLOAD_FOLDER,name)
 
 
-# -------- RENDER DEPLOYMENT FIX --------
-if __name__ == "__main__":
-    app.run(debug=True)
+if __name__=="__main__":
+    port=int(os.environ.get("PORT",10000))
+    app.run(host="0.0.0.0",port=port)

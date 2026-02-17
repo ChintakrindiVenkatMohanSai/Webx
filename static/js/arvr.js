@@ -1,54 +1,58 @@
-let scene,camera,renderer,controls;
+let renderer, scene, camera;
 
-function loadModel(url){
-
-scene=new THREE.Scene();
-camera=new THREE.PerspectiveCamera(60,window.innerWidth/window.innerHeight,0.1,1000);
-
-renderer=new THREE.WebGLRenderer({antialias:true});
-renderer.setSize(window.innerWidth,window.innerHeight);
-document.getElementById("viewer").appendChild(renderer.domElement);
-
-controls=new THREE.OrbitControls(camera,renderer.domElement);
-
-const light=new THREE.HemisphereLight(0xffffff,0x444444);
-scene.add(light);
-
-camera.position.set(0,1,3);
-
-if(url.endsWith(".glb") || url.endsWith(".gltf")){
-    const loader=new THREE.GLTFLoader();
-    loader.load(url,(gltf)=>{
-        scene.add(gltf.scene);
-    });
-}else{
-    const tex=new THREE.TextureLoader().load(url);
-    const geo=new THREE.PlaneGeometry(2,2);
-    const mat=new THREE.MeshBasicMaterial({map:tex});
-    scene.add(new THREE.Mesh(geo,mat));
-}
-
-animate();
-}
-
-function animate(){
-requestAnimationFrame(animate);
-renderer.render(scene,camera);
-}
-
-
-// ----------- AR CAMERA -----------
 async function startAR(file){
 
-const stream=await navigator.mediaDevices.getUserMedia({
-video:{facingMode:"environment"}
+if(!navigator.xr){
+alert("WebXR not supported on this device");
+return;
+}
+
+scene=new THREE.Scene();
+camera=new THREE.PerspectiveCamera();
+
+renderer=new THREE.WebGLRenderer({alpha:true,antialias:true});
+renderer.setSize(window.innerWidth,window.innerHeight);
+renderer.xr.enabled=true;
+
+document.body.appendChild(renderer.domElement);
+
+const session=await navigator.xr.requestSession("immersive-ar",{
+requiredFeatures:["hit-test"]
 });
 
-const video=document.createElement("video");
-video.srcObject=stream;
-video.autoplay=true;
+renderer.xr.setSession(session);
 
-document.body.appendChild(video);
+// LOAD IMAGE AS AR OBJECT
+const texture=new THREE.TextureLoader().load("/uploads/"+file);
+const plane=new THREE.Mesh(
+new THREE.PlaneGeometry(1,1),
+new THREE.MeshBasicMaterial({map:texture})
+);
 
-alert("Basic AR started (extend with WebXR hit-test later)");
+plane.position.set(0,0,-2);
+scene.add(plane);
+
+renderer.setAnimationLoop(()=>{
+renderer.render(scene,camera);
+});
+
+}
+
+
+// CAPTURE AR PHOTO
+function captureAR(){
+
+const canvas=document.querySelector("canvas");
+
+if(!canvas){
+alert("Start AR first");
+return;
+}
+
+const img=canvas.toDataURL("image/png");
+
+const link=document.createElement("a");
+link.href=img;
+link.download="AR_Photo.png";
+link.click();
 }
